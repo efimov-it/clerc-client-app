@@ -1,5 +1,5 @@
 <template>
-    <tab-view />
+    <tab-view @update="update" />
 </template>
 
 <script>
@@ -11,6 +11,11 @@ export default {
     data (){
         return {
 
+        }
+    },
+    methods: {
+        update(params) {
+            this.$emit('update', params);
         }
     }
 }

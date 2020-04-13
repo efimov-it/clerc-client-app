@@ -23,7 +23,6 @@ import Vue from 'vue'
 import axios from 'axios'
 import config from '../config'
 
-import VueRouter from 'vue-router'
 import router from '../router'
 
 import FormInput from '../components/form-input.vue'
@@ -34,11 +33,12 @@ export default {
             event.preventDefault();
             if(this.$refs.email.value !== '' && this.$refs.password.value !== ''){
                 axios.post(config.host+'/oauth/token',
-                "username="+this.$refs.email.value+
-                "&password="+this.$refs.password.value+
-                "&client_id=1"+
-                "&client_secret=c75IGwuqkjrO1RWCE4Ntn4zqpQdpgnEO2wGT9iMT"+
-                "&grant_type=password").then(resp=>{
+                            "username="+this.$refs.email.value+
+                            "&password="+this.$refs.password.value+
+                            "&client_id=1"+
+                            "&client_secret=c75IGwuqkjrO1RWCE4Ntn4zqpQdpgnEO2wGT9iMT"+
+                            "&grant_type=password")
+                .then(resp=>{
                     sessionStorage.setItem('access_token', resp.data.access_token);
                     sessionStorage.setItem('expires_in', resp.data.expires_in);
                     sessionStorage.setItem('refresh_token', resp.data.refresh_token);
@@ -61,7 +61,7 @@ export default {
                     }).catch(error => {
                         console.log(error);
                     });
-                }).catch((error)=>{
+                }).catch(()=>{
                     alert('Неверный логин или пароль.');
                 });
             }

@@ -10,7 +10,6 @@
 //
         
 import Vue from 'vue';
-import axios from 'axios';
 
 import BreadCrumbs from '../components/breadcrumbs.vue'
 Vue.component('breadcrumbs', BreadCrumbs);
@@ -54,7 +53,22 @@ export default {
         }
     },
     created(){
-        router.push('/watcher/objects/');
+        if ( window.location.pathname.indexOf('objects') == -1 ) {
+            router.push('/watcher/objects/');
+        }
+    },
+    updated () {
+        if ( window.location.pathname.indexOf('objects') == -1 ) {
+            router.push('/watcher/objects/');
+        }
+        if ( this.$route.path == '/watcher/objects/' & this.breadCrumbs.length > 1) {
+            this.breadCrumbs = [
+                {
+                    name: 'Объекты',
+                    link: '/watcher/objects/'
+                }
+            ];
+        }
     }
 }
 

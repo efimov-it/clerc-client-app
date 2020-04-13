@@ -37,7 +37,7 @@ export default {
             });
             }, 5);
         },
-        add : function(data){
+        add : function(){
             if(this.lastAddedId == null){
                 axios.post(config.host+'/api/shipProperties',
                 'contract_id='+this.$router.history.current.params.id,
@@ -100,6 +100,7 @@ export default {
                     params += '&'+paramsNames[i]+'='+elem
                 }
             });
+            
             axios.put(config.host+'/api/shipProperties/'+id,
                       params.substring(1),
                       {headers: { Authorization: this.AuthStr }})
@@ -135,7 +136,7 @@ export default {
                                         this.affterDeleting = newData;
                                         this.data = newData;
                                     }
-                                };
+                                }
                             }
                             else{
                                 alert('Ошибка!\r\rНе удалось удалить элемент.\r\rИнформация об ошибке:\r'+error);

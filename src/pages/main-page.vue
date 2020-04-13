@@ -41,6 +41,17 @@ export default {
 
     mounted(){
         this.$emit('update', 'logIn');
+    },
+
+    updated () {
+        if ( (this.$route.path == '/main/' || this.$route.path == '/main') & this.breadCrumbs.length > 1) {
+            this.breadCrumbs =  [
+                {
+                    name: 'Контракты',
+                    link: {path: '/main/'}
+                }
+            ]
+        }
     }
 }
 </script>

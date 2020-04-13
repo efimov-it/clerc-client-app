@@ -47,7 +47,7 @@ export default {
             });
             }, 5);
         },
-        add : function(data){
+        add : function(){
             if(this.lastAddedId == null){
                 axios.post(config.host+'/api/claimWorks/',
                 'contract_id='+this.$router.history.current.params.id,
@@ -169,7 +169,7 @@ export default {
                                         this.affterDeleting = newData;
                                         this.data = newData;
                                     }
-                                };
+                                }
                             }
                             else{
                                 alert('Ошибка!\r\rНе удалось удалить элемент.\r\rИнформация об ошибке:\r'+error);

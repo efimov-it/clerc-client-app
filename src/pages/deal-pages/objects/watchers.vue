@@ -24,7 +24,7 @@ export default {
         }
     },
     methods: {
-        userSelect: function(index){
+        userSelect: function(){
             let tmpUsers = '';
             let i = 0;
             this.data.forEach(elem => {
@@ -42,7 +42,7 @@ export default {
                       });
             
         },
-        add : function(data){
+        add : function(){
             axios.post(config.host+'/api/travelingCertificates',
             'contract_object_id='+this.$router.history.current.params.idObject,
             {headers: { Authorization: this.AuthStr } }).
@@ -145,7 +145,7 @@ export default {
         delet: function(id){
             axios.delete(config.host+'/api/travelingCertificates/'+id,
                           {headers: { Authorization: this.AuthStr } })
-                      .then((resp)=>{
+                      .then(()=>{
                           for(let i = 0; i < this.data.length; i++){
                               if(this.data[i].id == id){
                                   this.data.splice(i,1);

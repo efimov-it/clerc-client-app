@@ -2,7 +2,7 @@
     <div class="breadcrumbs">
         <a :style="'visibility: ' + [data.length > 1 ? 'visible' : 'hidden']" v-on:click="goToMain()" class="back-link breadcrumbs_back-link">На главную</a>
         <ul class="breadcrumbs_list">
-            <li v-for="(item, index) in data" @click="index == 0 ? goToMain : (index < data.length - 1 ? goToLink(item.link, index) : '')">
+            <li v-for="(item, index) in data" :key="index" @click="index == 0 ? goToMain : (index < data.length - 1 ? goToLink(item.link, index) : '')">
                 {{item.name}}
             </li>
         </ul>

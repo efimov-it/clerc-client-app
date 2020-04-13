@@ -54,6 +54,11 @@ export default {
           break;
       }
     }
+  },
+  mounted () {
+    if (sessionStorage.getItem('role')) {
+      this.headerButtons = true;
+    }
   }
 }
 </script>

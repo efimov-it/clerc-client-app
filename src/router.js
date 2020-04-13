@@ -3,7 +3,6 @@ import VueRouter from "vue-router";
 
 import LoginPage from './pages/login-page.vue'
 
-
 import MainPage from './pages/main-page.vue'
     import Users from './pages/users.vue'
     import Deals from './pages/deals.vue'

@@ -2,7 +2,7 @@
     <div class="table-view-wrapper">
         <scroll-bar :settings="{suppressScrollY : true}" class="table-view">
             <header v-if="this.data != undefined" class="table-view_headers" :style="'grid-template-columns: '+ [this.headers.length > 2 ? 'repeat('+(this.headers.length - 2)+', minmax(300px, 1fr))' : ''] + ' 40px 500px 40px;'">
-                <div ref="header" v-for="(tableHeader, index) in this.headers" class="table-view_header no-sort" >
+                <div ref="header" v-for="(tableHeader, index) in this.headers" :key="index" class="table-view_header no-sort" >
                     <span v-if="tableHeader.value != 'addButton' &
                                 tableHeader.value != 'Примечание' &
                                 tableHeader.isEdit == false">
@@ -24,7 +24,7 @@
                 </div>
             </header>
             <scroll-bar :settings="{wheelPropagation : true, suppressScrollX : true}" v-if="this.data != undefined" v-bind:class="'table-view_body'+[this.firstColumn ? ' table-view_body__first-column' : '']">
-                <div v-for="(tableRow, index) in this.data" class="table-view_row">
+                <div v-for="(tableRow, index) in this.data" :key="index" class="table-view_row">
                     <row-view :ref="tableRow.id"
                               :index="index"
                               :rowData="tableRow"

@@ -1,11 +1,8 @@
 <template>
-    <tables-view :pages="pages"/>
+    <tables-view :pages="pages" :currentPage="this.current" />
 </template>
 
 <script>
-import Vue from 'vue';
-import TablesView from '../../../components/tables-view';
-
 export default {
     data () {
         return {
@@ -40,7 +37,26 @@ export default {
                           '/objects/'+this.$router.history.current.params.idObject+
                           '/UH'
                 }
-            ]
+            ],
+            current: 0
+        }
+    },
+    created () {
+        const path = this.$router.currentRoute.path;
+        if(path.indexOf('/about') >= 0) {
+            this.current = 0;
+        }
+        if(path.indexOf('/watchers') >= 0) {
+            this.current = 1;
+        }
+        if(path.indexOf('/UP') >= 0) {
+            this.current = 2;
+        }
+        if(path.indexOf('/USh') >= 0) {
+            this.current = 3;
+        }
+        if(path.indexOf('/UH') >= 0) {
+            this.current = 4;
         }
     }
 }

@@ -1,53 +1,81 @@
 <template>
     <div>
-        <div :class="'table-view_row-content'+[rowDataBinding.isGrey?' color-grey':'']" :style="columnsWidth">
-            <div v-if="!isEdit" v-for="tableCell in rowDataBinding.data" class="table-view_cell" v-on:click="rowClick()">
-                <!-- ({{tableCell.id}})  -->
-                <span v-if="tableCell.type == 'text' |
-                            tableCell.type == 'number' |
-                            tableCell.type == 'date' |
-                            tableCell.type == 'password' |
-                            tableCell.type == 'email' |
-                            tableCell.type == 'select'">
-                    {{tableCell.value}}
-                </span>
+        <div :class="'table-view_row-content'+[rowDataBinding.isGrey?' color-grey':'']">
+            <div v-if="!isEdit" :style="'display: grid; '+columnsWidth">
+                <div
+                    v-for="(tableCell, i) in rowDataBinding.data"
+                    :key="i"
+                    class="table-view_cell"
+                    v-on:click="rowClick()">
+                    <span v-if="tableCell.type == 'text' |
+                                tableCell.type == 'number' |
+                                tableCell.type == 'date' |
+                                tableCell.type == 'password' |
+                                tableCell.type == 'email' |
+                                tableCell.type == 'select'">
+                        {{tableCell.value}}
+                    </span>
 
-                <input :id="'checkBox'+index" v-if="tableCell.type == 'checkbox'" type="checkbox" class="table-view_checkbox" v-model="tableCell.value" v-on:change="checkboxChange(index)">
-                <label v-if="tableCell.type == 'checkbox'" :for="'checkBox'+index"></label>
+                    <input :id="'checkBox'+index" v-if="tableCell.type == 'checkbox'" type="checkbox" class="table-view_checkbox" v-model="tableCell.value" v-on:change="checkboxChange(index)">
+                    <label v-if="tableCell.type == 'checkbox'" :for="'checkBox'+index"></label>
 
-                <div v-if="tableCell.type == 'presentation'">
-                    <presentation :data="tableCell.value"/>
-                </div>
+                    <div v-if="tableCell.type == 'presentation'">
+                        <presentation :data="tableCell.value"/>
+                    </div>
 
-                <div v-if="tableCell.type == 'files'" class="table-view_cell-links">
-                    <a title="Нажмите чтобы посмотреть или скачать" :href="host+file.url" target="_blank" class="table-view_cell-link" v-for="file in tableCell.value">{{file.name}}.{{file.extension}}</a>
+                    <div v-if="tableCell.type == 'files'" class="table-view_cell-links">
+                        <a title="Нажмите чтобы посмотреть или скачать"
+                        :href="host+file.url"
+                        target="_blank"
+                        class="table-view_cell-link"
+                        v-for="(file, i) in tableCell.value"
+                        :key="i">
+                            {{file.name}}.{{file.extension}}
+                        </a>
+                    </div>
                 </div>
             </div>
             
-            <div  v-if="isEdit" v-for="tableCell in rowDataBinding.data" >
-                <!-- ({{tableCell.id}})  -->
-                <input  v-if="tableCell.type == 'number'" ref="inputs" class="table-view_cell" :value="tableCell.value ? parseFloat(tableCell.value.replace(/\s/g, '').replace(/,/g, '.')) : ''" :title="tableCell.value" :checked="tableCell.value" type="number" />
-                <input  v-if="tableCell.type == 'date'" ref="inputs" class="table-view_cell" :value="[tableCell.value != null ? tableCell.value.split('.')[2]+'-'+tableCell.value.split('.')[1]+'-'+tableCell.value.split('.')[0] : '']" :title="tableCell.value" :checked="tableCell.value" type="date" />
-                <input  v-if="tableCell.type == 'password'" ref="inputs" class="table-view_cell" :value="tableCell.value" :title="tableCell.value" :checked="tableCell.value" type="password" />
-                <input  v-if="tableCell.type == 'email'" ref="inputs" class="table-view_cell" :value="tableCell.value" :title="tableCell.value" :checked="tableCell.value" type="email" />
+            <div v-if="isEdit" :style="'display: grid; '+columnsWidth">
+                <div v-for="(tableCell, i) in rowDataBinding.data"
+                    :key="i">
+                    <!-- ({{tableCell.id}})  -->
+                    <input  v-if="tableCell.type == 'number'" ref="inputs" class="table-view_cell" :value="tableCell.value ? parseFloat(tableCell.value.replace(/\s/g, '').replace(/,/g, '.')) : ''" :title="tableCell.value" :checked="tableCell.value" type="number" />
+                    <input  v-if="tableCell.type == 'date'" ref="inputs" class="table-view_cell" :value="[tableCell.value != null ? tableCell.value.split('.')[2]+'-'+tableCell.value.split('.')[1]+'-'+tableCell.value.split('.')[0] : '']" :title="tableCell.value" :checked="tableCell.value" type="date" />
+                    <input  v-if="tableCell.type == 'password'" ref="inputs" class="table-view_cell" :value="tableCell.value" :title="tableCell.value" :checked="tableCell.value" type="password" />
+                    <input  v-if="tableCell.type == 'email'" ref="inputs" class="table-view_cell" :value="tableCell.value" :title="tableCell.value" :checked="tableCell.value" type="email" />
+                    
+                    <textarea  v-if="tableCell.type == 'text'" ref="inputs" class="table-view_cell-textarea" :title="tableCell.value" v-model="tableCell.value"></textarea>
                 
-                <textarea  v-if="tableCell.type == 'text'" ref="inputs" class="table-view_cell-textarea" :title="tableCell.value">{{tableCell.value}}</textarea>
-            
-                <select v-if="tableCell.type == 'select'" ref="inputs" class="table-view_cell-select">
-                    <option v-for="(option, index) in tableCell.keys" :value="index" >{{option}}</option>
-                </select>
+                    <select v-if="tableCell.type == 'select'" ref="inputs" class="table-view_cell-select">
+                        <option v-for="(option, index) in tableCell.keys"
+                                :value="index"
+                                :key="index">
+                                    {{option}}
+                        </option>
+                    </select>
 
-                <div v-if="tableCell.type == 'presentation'">
-                    <presentation :data="tableCell.value"/>
-                </div>
+                    <div v-if="tableCell.type == 'presentation'">
+                        <presentation :data="tableCell.value"/>
+                    </div>
 
-                <div v-if="tableCell.type == 'files'" class="table-view_cell-links__edit">
-                    <span class="table-view_cell-link" v-for="(file, index) in tableCell.value">{{file.name}}.{{file.extension}}<button title="Удалить файл" class="remove-file" @click="removeFile(file.id, tableCell, index)"></button></span>
-                    <button @click="loadFile(tableCell)" class="add-row">Загрузить файл</button>
+                    <div v-if="tableCell.type == 'files'" class="table-view_cell-links__edit">
+                        <span class="table-view_cell-link"
+                            v-for="(file, index) in tableCell.value"
+                            :key="index">
+                                {{file.name}}.{{file.extension}}
+                                <button title="Удалить файл"
+                                        class="remove-file"
+                                        @click="removeFile(file.id, tableCell, index)">
+                                </button>
+                        </span>
+                        <button @click="loadFile(tableCell)" class="add-row">Загрузить файл</button>
+                    </div>
                 </div>
             </div>
 
-            <more-tools @option-click="optionClick" v-if="rowDataBinding.options" :options="rowDataBinding.options" :id="rowDataBinding.id"/>
+            <more-tools @option-click="optionClick" v-if="rowDataBinding.options && !isEdit" :options="rowDataBinding.options" :id="rowDataBinding.id"/>
+            <div ref="endEditBtn" class="more-tools save-btn" v-if="isEdit" title="Сохранить изменения"></div>
         </div>
         <!-- <div v-if="inRowAdd == true" class="table-view_add-row" title="Добавить строку" v-on:click="addRow(rowDataBinding.id)"></div>
         <div v-if="inRowAdd == true" class="table-view_add-row" title="Добавить строку" v-on:click="addRow(rowDataBinding.id)"></div> -->
@@ -179,9 +207,31 @@ export default {
                     }
                 });
             }
+        },
+        endEdit () {
+            let result = [];
+            this.$forceUpdate();
+            
+            this.$refs.inputs.forEach((text/*, index*/) => {
+                //let columnName = Object.keys(this.rowDataBinding.data)[index];
+                // if(this.alwaysUpdate == true){
+                //     result.push(text.value);
+                // }
+                // else{
+                    result.push(text.value);
+                    // if(this.rowDataBinding.data[columnName].value != text.value){
+                    //     result.push(text.value);
+                    // }
+                    // else{
+                    //     result.push(null);
+                    // }
+                // }
+            });
+            
+            this.isEdit = false;
+            this.event(result, this.rowData.id);
         }
-    }
-    ,
+    },
     created () {
         this.rowDataBinding = this.rowData;
         this.host = config.host;
@@ -199,29 +249,11 @@ export default {
         let context = this;
         if(context.isEdit){
             context.$refs.inputs.forEach((input, i) => {
-                input.onkeydown = function(e){
+                input.onkeydown = (e) => {
                     if(e.keyCode == 13){
-                        context.isEdit = false;
-                        let result = [];
-                        context.$refs.inputs.forEach((text, index) => {
-                            let columnName = Object.keys(context.rowDataBinding.data)[index];
-
-                            if(context.alwaysUpdate == true){
-                                result.push(text.value);
-                            }
-                            else{
-                                if(context.rowDataBinding.data[columnName].value != text.value){
-                                    result.push(text.value);
-                                }
-                                else{
-                                    result.push(null);
-                                }
-                            }
-                        });
-                        
-                        context.event(result, context.rowData.id);
+                        this.endEdit ();
                     }
-                    
+
                     if(e.keyCode == 27){
                         context.isEdit = false;
                     }
@@ -233,6 +265,11 @@ export default {
                     }
                 }
             });
+
+            context.$refs.endEditBtn.onclick = () => {
+                this.endEdit();
+            }
+
             this.dataBeforeEdit = [];
         }
     }
@@ -240,6 +277,18 @@ export default {
 </script>
 
 <style lang="scss">
+
+.save-btn {
+    background-color: #ffffff;
+    background-image: url('../assets/save.svg') !important;
+    background-size: 50% !important;
+    border: 1px solid #dcdce8;
+
+    &:hover {
+    background-image: url('../assets/save-focus.svg') !important;
+    }
+}
+
 .subtable{
     max-height: 0px;
     overflow: hidden;

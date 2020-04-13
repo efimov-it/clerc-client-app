@@ -2,7 +2,13 @@
     <div class="tables-view">
         <div>
             <div class="tables-view_header">
-                <button v-for="(page, index) in pages" class="tables-view_tab" :class="[index == current ? 'tables-view_tab__active' : '']" v-on:click="buttonClick(index, page.path)">{{page.text}}</button>
+                <button v-for="(page, index) in pages"
+                        :key="index"
+                        class="tables-view_tab" 
+                        :class="[index == current  ? 'tables-view_tab__active' : '']"
+                        v-on:click="buttonClick(index, page.path)">
+                            {{page.text}}
+                </button>
                 
                 <button v-if="canImport & role == 1" class="tables-view_tab tables-view_tab__right tables-view_tab__active" @click="importExcel">Импорт из Excel</button>
                 <button v-if="canImport & role == 1" class="tables-view_tab tables-view_tab__right tables-view_tab__active" @click="exportExcel">Экспорт в Excel</button>
@@ -24,7 +30,7 @@ Vue.component('presentation-form', PresentationForm);
 import router from '../router';
 import Axios from 'axios';
 export default {
-    props: ['pages'],
+    props: ['pages', 'currentPage'],
     data () {
         return {
             current: 0,
@@ -37,7 +43,7 @@ export default {
         buttonClick : function(index, path){
             this.canImport = index > 1;
             this.current = index;
-            router.push(path);
+            router.push(path ? path : '');
         },
         importExcel: function(){
             let formData = new FormData();
@@ -63,9 +69,8 @@ export default {
                     
                     Axios.post(config.host+'/api/objects/'+this.$router.history.current.params.idObject+'/import', formData,
                                 { headers: { Authorization: this.AuthStr } })
-                                .then((resp) => {
-                                    fileDialog.value = '';
-                                }).catch((error) => {
+                                .then(() => fileDialog.value = '')
+                                .catch((error) => {
                                     if(error.response.data.error.messages[0] == 'Ожидайте.'){
                                         alert('Файл был успешно загружен на сервер.\r\rВ данный момент он обрабатывается.\rЭто может занять несколько минут.');
                                     }
@@ -112,6 +117,18 @@ export default {
     },
     created(){
         this.role = sessionStorage.getItem('role');
+
+        this.current = this.$props.currentPage ? this.$props.currentPage : 0;
+
+        this.buttonClick(this.current);
+    },
+    updated () {
+        this.pages.find((page, i) => {
+            if (this.$route.path == page.path) {
+                this.current = i;
+                this.buttonClick(this.current);
+            }
+        });
     }
 }
 </script>

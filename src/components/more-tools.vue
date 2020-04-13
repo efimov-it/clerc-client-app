@@ -2,6 +2,7 @@
     <div :class="'more-tools' + [state ? ' more-tools__active' : '']" v-on:click="state = !state" v-on:mouseleave="state = false">
         <ul class="more-tools_list" :style="customStyle?customStyle:''">
             <li v-for="(option, i) in this.options"
+                :key="i"
                 :class="'more-tools_list-item more-tools_list-item__' + option.id" 
                 v-on:click="setClick(option)"
                 :style="customStyle != undefined & i == 0 ?'border-right: 1px solid #ffffff;':''"
@@ -90,12 +91,12 @@ export default {
                 background-image: url('../assets/edit.svg');
             }
             
-            &__import::before{
-                background-image: url('../assets/import.svg');
-            }
-            
             &__delet::before{
                 background-image: url('../assets/delete.svg');
+            }
+            
+            &__import::before{
+                background-image: url('../assets/Import-icon.svg');
             }
 
             &:not(:last-child){

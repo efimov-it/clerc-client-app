@@ -1,12 +1,12 @@
 <template>
     <div class="presentation">
-        <div v-for="presentation in data" class="presentation-wrapper">
+        <div v-for="(presentation, i) in data" :key="i" class="presentation-wrapper">
             <div class="presentation_date">
-                {{new Date(presentation.date).toLocaleDateString()}}
+                {{(new Date(presentation.date.replace(/"/g, ''))).toLocaleDateString()}}
             </div>
             <ul class="presentation_note">
-                <li v-for="text in JSON.parse(presentation.note)" class="presentation_note-text">
-                    {{text}}
+                <li v-for="(line, index) in presentation.note.split('<br />')" :key="index">
+                    {{line}}
                 </li>
             </ul>
         </div>
@@ -15,7 +15,22 @@
 
 <script>
 export default {
-    props: ['data']
+    props: ['data'],
+    methods: {
+        updateJSON () {
+            this._props.data.forEach(pres => {
+                pres.note = pres.note.replace(/["|"]|"/g, '').replace(/","/, '<br />');
+                pres.note = pres.note.replace(/\\r\\n|\\n/g, '<br />');
+                pres.date = pres.date.replace('"', '');
+            });
+        }
+    },
+    mounted () {
+        this.updateJSON();
+    },
+    updated () {
+        this.updateJSON();
+    }
 }
 </script>
 

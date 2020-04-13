@@ -37,7 +37,7 @@ export default {
             });
             }, 5);
         },
-        add : function(data){
+        add : function(){
             if(this.lastAddedId == null){
                 axios.post(config.host+'/api/aboutObjects/',
                 'contract_object_id='+this.$router.history.current.params.idObject,
@@ -134,7 +134,7 @@ export default {
                                         this.affterDeleting = newData;
                                         this.data = newData;
                                     }
-                                };
+                                }
                             }
                             else{
                                 alert('Ошибка!\r\rНе удалось удалить элемент.\r\rИнформация об ошибке:\r'+error);

@@ -46,7 +46,7 @@ export default {
         rowClick(id){
             this.$router.push('/deal/'+this.$router.history.current.params.id+'/objects/'+id+'/about');
         },
-        add : function(data){
+        add : function(){
             if(this.lastAddedId == null){
                 axios.post(config.host+'/api/objects',
                 'contract_id='+this.$router.history.current.params.id,
@@ -169,7 +169,7 @@ export default {
                                         this.affterDeleting = newData;
                                         this.data = newData;
                                     }
-                                };
+                                }
                             }
                             else{
                                 alert('Ошибка!\r\rНе удалось удалить элемент.\r\rИнформация об ошибке:\r'+error);

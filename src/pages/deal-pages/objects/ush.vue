@@ -51,7 +51,7 @@ export default {
             });
             }, 5);
         },
-        add : function(data){
+        add : function(){
             if(this.lastAddedId == null){
                 axios.post(config.host+'/api/mooringCertificates/',
                 'contract_object_id='+this.$router.history.current.params.idObject,
@@ -151,7 +151,6 @@ export default {
                       .then((resp)=>{
                           this.data.find((elem) => {
                               if(elem.id == id){
-                                let date = '';
                                 let plannedDate = resp.data.data.closing_date_planned != null ? (new Date(resp.data.data.closing_date_planned)).toLocaleDateString() : '';
                                 let realDate = resp.data.data.closing_date_real != null ? (new Date(resp.data.data.closing_date_real)).toLocaleDateString() : '';
 
@@ -178,7 +177,7 @@ export default {
             if(confirm('Вы действительно хотите удалить эту запись?')){
                 axios.delete(config.host+'/api/mooringCertificates/'+id,
                             {headers: { Authorization: this.AuthStr } })
-                        .then((resp)=>{
+                        .then(()=>{
                             for(let i = 0; i < this.data.length; i++){
                                 if(this.data[i].id == id){
                                     this.data.splice(i,1);
@@ -194,7 +193,7 @@ export default {
                                         this.affterDeleting = newData;
                                         this.data = newData;
                                     }
-                                };
+                                }
                             }
                             else{
                                 alert('Ошибка!\r\rНе удалось удалить элемент.\r\rИнформация об ошибке:\r'+error);
@@ -233,7 +232,6 @@ export default {
             this.$emit('presentation', {id: id, model: 'mooringCertificates'}, (data)=>{
                 this.data.forEach(elem=>{
                     if(elem.id == id){
-                        console.log(elem.data.presentation.value, data)
                         elem.data.presentation.value = data;
                     }
                 });
@@ -283,7 +281,6 @@ export default {
                         );
                     }
 
-                    let date = '';
                     let plannedDate = mooringCertificate.closing_date_planned != null ? (new Date(mooringCertificate.closing_date_planned)).toLocaleDateString() : '';
                     let realDate = mooringCertificate.closing_date_real != null ? (new Date(mooringCertificate.closing_date_real)).toLocaleDateString() : '';
 

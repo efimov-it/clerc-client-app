@@ -42,7 +42,7 @@ export default {
             this.$emit('update', {type: 'openObject', value: name, link: '/watcher/objects/'+id+'/UP'});
             this.$router.push('/watcher/objects/'+id+'/UP');
         },
-        add : function(data){
+        add : function(){
             if(this.lastAddedId == null){
                 axios.post(config.host+'/api/objects',
                 'contract_id='+this.$router.history.current.params.id,
@@ -128,7 +128,7 @@ export default {
             if(confirm('Вы действительно хотите удалить этот объект?')){
                 axios.delete(config.host+'/api/objects/'+id,
                             {headers: { Authorization: this.AuthStr } })
-                        .then((resp)=>{
+                        .then(()=>{
                             for(let i = 0; i < this.data.length; i++){
                                 if(this.data[i].id == id){
                                     this.data.splice(i,1);

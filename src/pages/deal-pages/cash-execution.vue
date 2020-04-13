@@ -35,7 +35,7 @@ export default {
         }
     },
     methods: {
-        add : function(data){
+        add : function(){
             if(this.lastAddedId == null){
                 axios.post(config.host+'/api/cashExecutions',
                 'contract_id='+this.$router.history.current.params.id,
@@ -246,7 +246,7 @@ export default {
                                         this.affterDeleting = newData;
                                         this.data = newData;
                                     }
-                                };
+                                }
                             }
                             else{
                                 alert('Ошибка!\r\rНе удалось удалить элемент.\r\rИнформация об ошибке:\r'+error);
@@ -260,7 +260,7 @@ export default {
                 url: link+'?page='+i,
                 headers: { Authorization: this.AuthStr }})
             .then((resp) => {
-                resp.data.data.cash_executions.forEach((cashExecution, i) => {
+                resp.data.data.cash_executions.forEach(cashExecution => {
                     let tmp = {};
 
                     tmp.id = cashExecution.id;

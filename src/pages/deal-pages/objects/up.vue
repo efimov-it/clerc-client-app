@@ -1,7 +1,10 @@
 <template>
     <div>
         <button v-if="this.role == 1" class="add-row" v-on:click="addGroupQuery">Добавить новую группу УП</button>
-        <scroll-bar :settings="{suppressScrollY : true}" class="group-wrapper" v-for="(group, index) in data">
+        <scroll-bar :settings="{suppressScrollY : true}"
+                    class="group-wrapper" 
+                    v-for="(group, index) in data"
+                    :key="index">
             
             <div
                 class="group-header"
@@ -47,8 +50,6 @@ Vue.component('more-tools', MoreTools);
 import TableView from '../../../components/table-view';
 Vue.component('table-view', TableView);
 
-import component from '../../../pages/users.vue'
-
 export default {
     data () {
         return {
@@ -63,7 +64,7 @@ export default {
     },
     methods: {
         //Группа УП
-        addGroupQuery : function(id, posType){
+        addGroupQuery : function(){
             if(this.groupEditId == null){
                 axios({
                     method: 'post',
@@ -92,7 +93,7 @@ export default {
                                 method: 'delete',
                                 url: config.host+'/api/groups/'+data.id,
                                 headers: { Authorization: this.AuthStr }})
-                            .then(resp => {
+                            .then(() => {
                             })
                             .catch(error => {                        
                                 if(error.response.data.error.messages[0] == 'true'){
@@ -100,7 +101,7 @@ export default {
                                         if(this.data[i].id == elem.id){
                                             this.data.splice(i, 1);
                                         }
-                                    };
+                                    }
                                 }
                                 else{
                                     alert('Ошибка!\r\rНе удалось удалить элемент.\r\rИнформация об ошибке:\r'+error);
@@ -568,7 +569,7 @@ export default {
                     method: 'delete',
                     url: config.host+'/api/reports/'+id,
                     headers: { Authorization: this.AuthStr }
-                }).then(resp=>{
+                }).then(()=>{
                 }).catch(error=>{
                     if(error.response.data.error.messages[0] == 'true'){
                         for(let i = 0; i < this.data.length; i++){
@@ -858,7 +859,6 @@ export default {
             }, 100);
         }
 
-        let context = this;
         if(this.groupEditId != null){
             this.data.find(elem => {
                 if(elem.id == this.groupEditId){
@@ -869,7 +869,7 @@ export default {
                                 url: config.host+'/api/groups/'+elem.id,
                                 data: 'name='+elem.name,
                                 headers: { Authorization: this.AuthStr }})
-                            .then(resp => {
+                            .then(() => {
                                 elem.isEdit = false;
                                 this.groupEditId = null;
                             });

@@ -4,21 +4,29 @@
         <div class="modal-window">
             <header class="modal-window_header">{{data.title}} | Редактирование предъявлений <button @click="close" class="modal-window_close"></button></header>
             <div class="presentation-form">
-                <div class="presentation-form_date-list">
-                    <div v-for="(date, index) in data.values" :class="'presentation-form_date '+[index == current? 'presentation-form_date__selected' : '']">
-                        <input ref="currentDate" @keyup="dateEdit" v-if="date.isEdit" class="table-view_cell" type="date" :value="date.value" />
-                        <span @click="dateClick(index)" v-else class="table-view_cell" >{{date.value}}</span>
-                        <more-tools @option-click="option" :id="date.id" :options="date.options" class="presentation-form_tools" />
-                    </div>
-                    <button @click="addNewDate" class="add-row">Добавить новую дату предъявления</button>
-                </div>
-                <div v-if="data.values != null & data.values != [] & data.values[current] != undefined" class="presentation-form_text-list">
-                    <div v-for="(text, index) in data.values[current].texts" class="presentation-form_text">
-                        <input ref="currentNote" @keyup="textEdit" v-if="text.isEdit" class="table-view_cell" type="text" :value="text.value" />
-                        <span ref="notes" v-else class="table-view_cell" >{{text.value}}</span>
-                        <more-tools @option-click="option" :id="index" :options="text.options" />
-                    </div>
-                    <button @click="addNewNote" class="add-row">Добавить новое предъявление</button>
+                <button class="add-row" @click="addPresentation">Добавить новое предъявление</button>
+                <table class="editble-table">
+                    <thead>
+                        <tr>
+                            <td width="250px">Дата предъявления</td>
+                            <td colspan="2">Содержание предъявления</td>
+                        </tr>
+                    </thead>
+                        <tbody>
+                            <tr v-if="data.notes.length == 0">
+                                <td colspan="3" style="padding: 40px; text-align: center;">Для {{data.title}} нет созданных предъявлений</td>
+                            </tr>
+                            <tr v-for="(pres, i) in data.notes" :key="i">
+                                <td align="left" valign="top"><input class="table-view_cell" type="date" v-model="pres.date"></td>
+                                <td align="left" valign="top"><textarea style="max-width: 400px;" class="table-view_cell-textarea" v-model="pres.note" /></td>
+                                <td style="padding: 20px 0px">
+                                    <button  title="Удалить запись" @click="deletePresentation(i)" style="width: 20px; height: 20px;" class="modal-window_close"></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                </table>
+                <div class="save-button-wrapper">
+                    <button class="add-row" @click="saveAndClose">Сохранить и закрыть</button>
                 </div>
             </div>
         </div>
@@ -26,44 +34,31 @@
 </template>
 
 <script>
+import Vue from 'vue';
 import Axios from 'axios';
 import config from '../config';
+
+import ScrollBar from 'vue-custom-scrollbar' 
+Vue.component('scroll-bar', ScrollBar);
+
 export default {
     data(){
         return {
-            dateEditId: null,
-            noteEditId: null,
+            deleted: [],
             isActive: false,
             id: null,
             model: null,
             data: null,
-            current: 0,
             callback: null,
             AuthStr: (sessionStorage.getItem('token_type')+' ').concat(sessionStorage.getItem('access_token'))
         }
     },
     methods: {
         close(){
-            let resultData = [];
-            this.data.values.forEach(elem=>{
-                elem.value = elem.value.split('.')
-                resultData.push({
-                    date: elem.value[2]+'-'+elem.value[1]+'-'+elem.value[0],
-                    note: []
-                });
-                elem.texts.forEach(note=>{
-                    resultData[resultData.length - 1].note.push(note.value);
-                });
-                resultData[resultData.length - 1].note = JSON.stringify(resultData[resultData.length - 1].note);
-            });
-            this.callback(resultData);
             this.isActive = false;
             this.id = null;
             this.model = null;
             this.data = null;
-            this.current = 0;
-            this.dateEditId = null;
-            this.noteEditId = null;
         },
 
         option(option){
@@ -96,265 +91,75 @@ export default {
                         this.data.title = 'УХ № '+resp.data.data.number
                     }
                 }
-                this.data.values = [];
+
+                let tmpData = [];
+
                 resp.data.data.presentations.forEach(elem => {
 
-                    let notes = JSON.parse(elem.note);
-                    let texts = [];
-
-                    if(notes){
-                        notes.forEach(note => {
-                            if(note){
-                                texts.push({
-                                    isEdit: false,
-                                    value: note,
-                                    options: [
-                                        {
-                                            id: 'edit',
-                                            text: 'Редактировать',
-                                            event: this.editNote
-                                        },
-                                        {
-                                            id: 'delet',
-                                            text: 'Удалить',
-                                            event: this.deleteNote
-                                        }
-                                    ]
-                                });
-                            }
+                    let note = '';
+                    //TODO: Удалить блок try/catch когда в БД исчезнуть все записи в формате JSON
+                    try {
+                        const tmp = JSON.parse(elem.note);
+                        tmp.forEach(n => {
+                             note += n + '\r\n';
                         });
                     }
-                    this.data.values.push({
+                    catch (e) {
+                        note = elem.note.replace(/"/g, '').replace(/\\n/g, '\n');
+                    }
+
+                    tmpData.push({
                         id: elem.id,
-                        value: new Date(JSON.parse(elem.date)).toLocaleDateString(),
-                        texts: texts,
-                        isEdit: false,
-                        options: [
-                            {
-                                id: 'edit',
-                                text: 'Редактировать',
-                                event: this.editPresentation
-                            },
-                            {
-                                id: 'delet',
-                                text: 'Удалить',
-                                event: this.deletePresentation
-                            }
-                        ]
-                    })
+                        date: elem.date.replace(/"/g,''),
+                        note: note
+                    });
                 });
+
+                this.data.notes = tmpData;
             });
         },
 
-
-        addNewDate(){
-            if(this.dateEditId == null){
-                if(this.data.values == undefined){
-                    this.data.values = [];
-                }
-                this.data.values.push({
-                    id: -1,
-                    value: '',
-                    texts: [],
-                    isEdit: true,
-                    options: [
-                        {
-                            id: 'edit',
-                            text: 'Редактировать',
-                            event: this.editPresentation
-                        },
-                        {
-                            id: 'delet',
-                            text: 'Удалить',
-                            event: this.deletePresentation
-                        }
-                    ]
-                });
-                let tmp = this.data;
-                this.data = null;
-                this.data = tmp;
-
-                this.dateEditId = -1;
-            }
+        addPresentation () {
+            this.data.notes.push({
+                id: -1,
+                date: '2020-01-01',
+                note: ''
+            });
+            this.$forceUpdate();
         },
-        dateEdit(e){
-            if(e.code == 'Enter'){
-                if(this.$refs.currentDate[0].value != ''){
-                    let model_type;
-                    switch(this.model){
-                        case 'mooringCertificates':
-                            model_type = 'mooring_certificates';
-                        break;
-                        case 'travelingCertificates':
-                            model_type = 'traveling_certificates';
-                        break;
-                        case 'reports':
-                            model_type = 'reports';
-                        break;
-                    }
-                    Axios({
-                        method: this.dateEditId == -1 ? 'post' : 'put',
-                        url: config.host+'/api/presentations/'+(this.dateEditId == -1 ? '' : this.dateEditId),
-                        data: 'model_id='+this.id+
-                            '&model_type='+model_type+
-                            '&date='+JSON.stringify(this.$refs.currentDate[0].value),
-                        headers: { Authorization: this.AuthStr }
-                    }).then(resp => {
-                        let dateIndex;
-                        if(this.dateEditId == -1){
-                            dateIndex = this.data.values.length - 1;
-                        }
-                        else{
-                            this.data.values.forEach((elem, index) => {
-                                if(elem.id == this.dateEditId){
-                                    dateIndex = index;
-                                }
-                            });
-                        }
-                        this.data.values[dateIndex].id = resp.data.data.id;
-                        this.data.values[dateIndex].value = new Date(this.$refs.currentDate[0].value).toLocaleDateString();
-                        this.data.values[dateIndex].isEdit = false;
-                        this.dateEditId = null;
 
-                        let tmp = this.data;
-                        this.data = null;
-                        this.data = tmp;
+        deletePresentation (i) {
+            if (confirm('Вы действительно хотите удалить предъявление от ' + (new Date(this.data.notes[i].date)).toLocaleDateString() + '?\r\n'+
+                        'Это действие невозможно отменить после выполнения.\r\n\r\n'+
+                        'Содержание предъявления:\r\n' + this.data.notes[i].note)) {
+                if (this.data.notes[i].id != -1){
+                    Axios({
+                            method: 'delete',
+                            url: config.host + '/api/presentations/'+this.data.notes[i].id,
+                            headers: { Authorization: this.AuthStr }
+                    }).catch(err=>{
+                        if(err.response.data.error.messages[0] == 'true') {
+                            this.deleted.push(this.data.notes[i].id);
+                            this.data.notes.splice(i,1); 
+                            
+                            this.$forceUpdate();
+                        }
+                        else {
+                            alert('Не удалось удалить предъявление.');
+                        }
                     });
                 }
-                else{
-                    alert('Вы забыли указать дату.');
+                else {
+                    this.data.notes.splice(i,1); 
+                    
+                    this.$forceUpdate();
                 }
             }
-            if(e.code == 'Escape'){
-                if(this.data.values[this.data.values.length - 1].id){
-                    this.data.values.splice(this.data.values.length - 1, 1);
-                }
-                else{
-                    this.data.values[this.data.values.length - 1].isEdit = false;
-                }
-                this.dateEditId = null;
-
-                let tmp = this.data;
-                this.data = null;
-                this.data = tmp;
-            }
-        },
-        editPresentation(id){
-            this.dateEditId = id;
-            this.data.values.forEach(elem=>{
-                if(elem.id == id){
-                    elem.isEdit = true;
-
-                    let tmp = this.data;
-                    this.data = null;
-                    this.data = tmp;
-                }
-            });
-        },
-        deletePresentation(id){
-            this.data.values.forEach((elem, index) => {
-                if(elem.id == id){
-                    if(confirm('Вы действительно хотите удалить предъявление от "'+elem.value+'"?')){
-                        Axios({
-                            method: 'delete',
-                            url: config.host+'/api/presentations/'+id,
-                            headers: { Authorization: this.AuthStr }
-                        }).then().catch(error => {
-                            if(error.response.data.error.messages[0] == 'true'){
-                                for(let i = 0; i < this.data.values.length; i++){
-                                    if(this.data.values[i].id == id){
-                                        this.data.values.splice(i, 1);
-                                        
-                                        let tmp = this.data;
-                                        this.data = null;
-                                        this.data = tmp;
-                                    }
-                                }
-                            }
-                            else{
-                                alert('Ошибка!\r\rНе удалось удалить предъявление.\r\rИнформация об ошибке:\r'+error);
-                            }
-                        });
-                    }
-                }
-            });
         },
 
-
-        dateClick(index){
-            if(this.noteEditId == null){
-                this.current = index;
-            }
-            else{
-                alert('Пожалуйста, закончите редактирование предъявления');
-            }
-        },
-
-
-        addNewNote(){
-            if(this.noteEditId == null){
-                this.noteEditId = -1;
-                this.data.values.forEach((elem, index) => {
-                    if(index == this.current){
-                        if(elem.texts == undefined){
-                            elem.texts = [];
-                        }
-                        
-                        elem.texts.push({
-                            value: '',
-                            isEdit: true,
-                            options: [
-                                {
-                                    id: 'edit',
-                                    text: 'Редактировать',
-                                    event: this.editNote
-                                },
-                                {
-                                    id: 'delet',
-                                    text: 'Удалить',
-                                    event: this.deleteNote
-                                }
-                            ]
-                        });
-
-                        let tmp = this.data;
-                        this.data = null;
-                        this.data = tmp;
-                    }
-                })
-            }
-        },
-        textEdit(e){
-            if(e.code == 'Enter'){
-                this.data.values[this.current]
-                .texts[this.data.values[this.current].texts.length - 1].value = this.$refs.currentNote[0].value;
-
-                this.checngeNotes((resp)=>{
-                    let noteIndex;
-                    if(this.noteEditId == -1){
-                        noteIndex = this.data.values[this.current].texts.length - 1;
-                    }
-                    else{
-                        noteIndex = this.noteEditId;
-                    }
-
-                    this.data.values[this.current].texts[noteIndex].isEdit = false;
-                    this.noteEditId = null;
-
-                    let tmp = this.data;
-                    this.data = null;
-                    this.data = tmp;
-                })
-            }
-        },
-        checngeNotes(callback){
-            let newTexts = [];
-            
-            this.data.values[this.current].texts.forEach(elem=>{
-                newTexts.push(elem.value);
-            });
-            
-            let model_type;
+        saveAndClose() {
+            let model_type,
+                queryResult = true;
             switch(this.model){
                 case 'mooringCertificates':
                     model_type = 'mooring_certificates';
@@ -366,36 +171,44 @@ export default {
                     model_type = 'reports';
                 break;
             }
-
-            Axios({
-                method: 'put',
-                url: config.host+'/api/presentations/'+this.data.values[this.current].id,
-                data: 'model_id='+this.id+
-                        '&model_type='+model_type+
-                        '&note='+JSON.stringify(newTexts),
-                headers: { Authorization: this.AuthStr }
-            }).then(resp => {
-                callback(resp);
+            this.data.notes.forEach(note => {
+                if( note.id != -1 ) {
+                    Axios.put(config.host + '/api/presentations/'+note.id,
+                                {
+                                    model_id: this.id,
+                                    model_type: model_type,
+                                    date: JSON.stringify(note.date),
+                                    note: JSON.stringify(note.note)
+                                },
+                                {headers: { Authorization: this.AuthStr }}).catch(() => queryResult = false);
+                }
+                else {
+                    Axios.post(config.host + '/api/presentations/',
+                                {
+                                    model_id: this.id,
+                                    model_type: model_type,
+                                    date: JSON.stringify(note.date),
+                                    note: JSON.stringify(note.note)
+                                },
+                                {headers: { Authorization: this.AuthStr }})
+                    .then(resp => note.id = resp.data.data.id)
+                    .catch(() => queryResult = false);
+                }
             });
-        },
-        editNote(id){
-            console.log(this.data.values[this.current].texts[id]);
-            this.data.values[this.current].texts[id].isEdit = true;
-            this.noteEditId = id;
-            
-            let tmp = this.data;
-            this.data = null;
-            this.data = tmp;
-        },
-        deleteNote(id){
-            if(confirm('Вы действительно хотите удалить запись предъявления?\r\rСодержание:\r'+this.data.values[this.current].texts[id].value)){
-                this.data.values[this.current].texts.splice(id, 1);
-
-                this.checngeNotes(()=>{
-                    let tmp = this.data;
-                    this.data = null;
-                    this.data = tmp;
+            if(queryResult) {
+                let resultData = [];
+                this.data.notes.forEach(elem=>{
+                    resultData.push({
+                        date: elem.date,
+                        note: elem.note.replace(/\n/g, '<br />')
+                    });
                 });
+                this.callback(resultData);
+
+                this.close();
+            }
+            else {
+                alert('Произошла ошибка\r\n\r\nПри сохранении не удалось записать часть данных.\r\nПожалуйста, проверьте введённые данные или повторите попытку позже.');
             }
         }
     }
@@ -428,9 +241,8 @@ export default {
 }
 .modal-window {
     width: 100vw;
-    height: 100vh;
-    max-width: 60vw;
-    max-height: 60vh;
+    max-width: 50vw;
+    max-height: 70vh;
     background-color: #ffffff;
     z-index: 101;
     position: absolute;
@@ -456,12 +268,56 @@ export default {
         background-size: contain;
     }
 }
+
+.save-button-wrapper{
+    position: absolute;
+    bottom: 0px;
+    left: 20px;
+    text-align: center;
+    width: calc(100% - 50px);
+    padding: 20px;
+    background-color: #ffffff;
+}
+
+.editble-table {
+    width: 100%;
+    max-height: 80%;
+    margin: 15px 0px;
+    border-collapse: collapse;
+
+    & > thead td {
+        padding: 30px 40px;
+        border-bottom: 1px solid #DCDCE8;
+        font-weight: bold;
+    }
+
+    & > tbody {
+        & td {
+            padding: 20px 40px;
+
+            & * {
+                width: 100%;
+                margin: 0px !important;
+            }
+        }
+
+        & tr:not(:last-child) {
+            & td {
+                border-bottom: 1px solid #DCDCE8;
+            }
+        }
+    }
+}
+
 .presentation-form {
-    padding: 30px;
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    height: calc(100% - 90px);
-    grid-gap: 30px;
+    padding: 30px 30px 75px 30px;
+    // display: grid;
+    // grid-template-columns: 1fr 2fr;
+    max-height: 60vh;
+    // grid-gap: 30px;
+
+    overflow: hidden;
+    overflow-y: auto;
 
     &_text-list,
     &_date-list {

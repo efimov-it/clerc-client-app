@@ -12,7 +12,6 @@
 
 <script>
 import Vue from 'vue'
-import router from '../router'
 import axios from 'axios'
 import config from '../config';
 import ScrollBar from 'vue-custom-scrollbar';
@@ -174,7 +173,7 @@ export default {
                         method: 'delete',
                         url: config.host+'/api/users/'+id,
                         headers: { Authorization: this.AuthStr }}).
-                        then(resp => {
+                        then(() => {
                         }).catch(error => {
                             if(error.response.data.error.messages[0] == 'true'){
                                 let newData = this.data.slice(0);
@@ -184,7 +183,7 @@ export default {
                                         this.affterDeleting = newData;
                                         this.data = newData;
                                     }
-                                };
+                                }
                             }
                             else{
                                 alert('Ошибка!\r\rНе удалось удалить элемент.\r\rИнформация об ошибке:\r'+error);

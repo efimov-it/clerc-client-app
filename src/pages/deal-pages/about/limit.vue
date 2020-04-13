@@ -5,7 +5,9 @@
             <header class="table-view_headers limit-header" style="display: inline-grid;min-width: 100%;">
                 <div :style="this.years.length > 0 ? 'display: grid;'+
                                                      'grid-template-columns: repeat('+this.years.length+', minmax(200px, 1fr))' : ''">
-                    <span v-for="year in this.years" class="table-view_header no-sort">
+                    <span v-for="(year, i) in this.years"
+                          :key="i"
+                          class="table-view_header no-sort">
                         {{year.value}}
                         <more-tools @option-click="yearOption"
                                     :options="year.options"
@@ -13,18 +15,22 @@
                                     class="header-more-tools" />
                     </span>
                 </div>
-                <button @click="addYear" class="addColumn" title="Добавить новый год"></button>
+                <button @click="addYear" class="addColumn" style="position: relative;" title="Добавить новый год"></button>
                 <span class="table-view_header no-sort">Примечание</span>
             </header>
             <div class="table-view_body">
-                <div v-for="row in this.data">
+                <div v-for="(row, i) in this.data" :key="i">
                     <div v-if="row.isEdit == false"
                          class="table-view_row"
                          :style="row.years.length > 0 ? 'min-width: 100%;'+
                                                         'border-bottom: 1px solid #dcdce8;'+
                                                         'display: inline-grid;'+
                                                         'grid-template-columns: repeat('+row.years.length+', minmax(200px, 1fr)) 60px 500px' : ''">
-                        <span class="table-view_cell" v-for="cell in row.years">{{cell.value != '' ? parseFloat(cell.value).toLocaleString() : ''}}</span>
+                        <span class="table-view_cell"
+                              v-for="(cell, i) in row.years"
+                              :key="i">
+                                {{cell.value != '' ? parseFloat(cell.value).toLocaleString() : ''}}
+                        </span>
                         <span></span>
                         <span class="table-view_cell" style="padding-right: 90px">{{row.note}}</span>
                 
@@ -41,7 +47,8 @@
                                                         'display: inline-grid;'+
                                                         'grid-template-columns: repeat('+row.years.length+', minmax(200px, 1fr)) 60px 500px' : ''">
                         <input
-                            v-for="cell in row.years"
+                            v-for="(cell, i) in row.years"
+                            :key="i"
                             :value="cell.value"
                             ref="editInputs"
                             :cell-id="cell.id"
@@ -49,7 +56,8 @@
                             class="table-view_cell" />
                         <span></span>
                         <textarea class="table-view_cell-textarea"
-                                  ref="editInputs">{{row.note}}</textarea>
+                                  ref="editInputs"
+                                  v-model="row.note"></textarea>
                     </div>
                 </div>
             </div>
@@ -207,10 +215,10 @@ export default {
                             data: dataQuery,
                             url: config.host+'/api/limitBudgetaryObligations/multiple',
                             headers: { Authorization: this.AuthStr }
-                        }).then(resp=>{
+                        }).then(()=>{
                             this.years[this.editYearId].value = newYear;
 
-                            this.data.forEach((limit, i)=>{
+                            this.data.forEach(limit=>{
                                 limit.years[this.editYearId].year = newYear;
                             });
 
@@ -410,7 +418,7 @@ export default {
                                         data: dataQuery,
                                         url: config.host+'/api/limitBudgetaryObligations/multiple',
                                         headers: { Authorization: this.AuthStr }
-                                    }).then(resp=>{
+                                    }).then(()=>{
                                         this.data[this.editLimitId].years.forEach((year, i)=>{
                                             year.value = inputs[i].value;
                                         });
@@ -480,11 +488,11 @@ export default {
                                 this.editLimit();
                             }
                         });
-                        break;
                     }
                     else{
                         alert('Пожалуйста, закончите редактирование таблицы и повторите попытку.')
                     }
+                break;
                 case 'delet':
                     data.data.event(data.id);
                     break;
@@ -678,5 +686,53 @@ export default {
 .modal-window-limits{
     height: 360px !important;
     width: 500px !important;
+}
+
+.table-view_headers, .table-view_row-content {
+    display: grid;
+    border-bottom: 1px solid #DCDCE8;
+}
+.table-view_header {
+    padding: 30px 40px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #2E2E2E;
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+input.table-view_cell {
+    margin: 10px 20px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: none;
+    background-color: #F6F7FB;
+    min-height: 50px;
+    width: calc(100% - 40px);
+}
+.table-view_cell {
+    padding: 20px 40px;
+    font-size: 16px;
+    color: #2E2E2E;
+    /* max-height: 35px; */
+    transition: all 0.3s;
+    overflow: hidden;
+}
+.table-view_row {
+    position: relative;
+    border-right: 1px solid #DCDCE8;
+}
+.table-view_cell-textarea {
+    border: none;
+    background-color: #f6f7fb;
+    padding: 5px 10px;
+    border-radius: 5px;
+    min-width: calc(100% - 20px);
+    max-width: calc(100% - 20px);
+    margin: 10px !important;
+    line-height: 1.3rem;
+    height: 100px !important;
 }
 </style>

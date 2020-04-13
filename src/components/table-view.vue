@@ -2,12 +2,18 @@
     <div class="table-view-wrapper">
         <scroll-bar :settings="{suppressScrollY : true}" class="table-view">
             <header v-if="this.data != undefined" class="table-view_headers" :style="columns?columns:'grid-template-columns: repeat('+(this.headers.length)+', minmax(300px, 1fr)) 40px;'">
-                <div ref="header" v-for="(tableHeader, index) in this.headers" :class="'table-view_header' + (noSort ? ' no-sort': '')" v-on:click="!noSort ? sort(index) : ''">
+                <div ref="header"
+                     v-for="(tableHeader, index) in this.headers"
+                     :key="index"
+                     :class="'table-view_header' + (noSort ? ' no-sort': '')"
+                     v-on:click="!noSort ? sort(index) : ''">
                     {{tableHeader}}
                 </div>
             </header>
             <scroll-bar :settings="{wheelPropagation : true, suppressScrollX : true}" v-if="this.data != undefined" v-bind:class="'table-view_body'+[this.firstColumn ? ' table-view_body__first-column' : '']">
-                <div v-for="(tableRow, index) in this.data" class="table-view_row">
+                <div v-for="(tableRow, index) in this.data"
+                     :key="index"
+                     class="table-view_row">
                     <row-view :ref="tableRow.id"
                               :index="index"
                               :rowData="tableRow"

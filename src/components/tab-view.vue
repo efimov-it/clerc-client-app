@@ -1,7 +1,11 @@
 <template>
     <div class="tab-view">
         <div class="tab-view_tabs">
-            <tab v-for="tab in tabs" :ref="'tab'+tab.id" :data="tab" @tabClick="tabClick" />
+            <tab v-for="(tab, i) in tabs"
+                 :key="i"
+                 :ref="'tab'+tab.id"
+                 :data="tab"
+                 @tabClick="tabClick" />
         </div>
         <scroll :settings="{suppressScrollX : true}" class="tab-view_content">
             <router-view></router-view>
@@ -16,6 +20,7 @@ import scroll from 'vue-custom-scrollbar'
 Vue.component('scroll', scroll)
 
 import Tab from './tab'
+import Axios from 'axios'
 Vue.component('tab', Tab);
 
 export default {
@@ -68,30 +73,62 @@ export default {
                     path : '/cash-execution'
                 }
             ],
+            AuthStr: (sessionStorage.getItem('token_type')+' ').concat(sessionStorage.getItem('access_token')),
             path : ''
         }
     },
     methods : {
         tabClick : function(id){
             let context = this;
-            
+
             this.tabs.forEach(function(elem){
                 if(elem.id != id){
                     context.$refs['tab'+elem.id][0].selected = false;
                 }
                 else{
                     if(context.$route.path != context.path+elem.path){
-                        route.push(context.path+elem.path);
+                        route.replace('/deal/'+route.currentRoute.params.id+elem.path);
                     }
                 }
             });
 
+        },
+        loadDealNumber () {
+            Axios({
+                method: 'get',
+                url: 'https://clercback.dgz.ru/api/contracts/'+route.currentRoute.params.id,
+                headers: { Authorization: this.AuthStr }})
+            .then(resp=>{
+                this.$emit('update', {name: (resp.data.data.number ? resp.data.data.number : 'Номер не указан'), link: '/deal/' + route.currentRoute.params.id, event: 'openDeal'});
+            })
+            .catch(()=>{
+                this.$emit('update', {name: 'Номер не указан', link: '/deal/' + route.currentRoute.params.id, event: 'openDeal'});
+            });
         }
     },
     mounted () {
+        if ( this.$parent.$parent.$children[0].data.length == 1) {
+            this.loadDealNumber();
+        }
         this.path = this.$route.path;
-        this.$refs.tab0[0].selected = true;
-        route.push(this.path+'/ship-info');
+        const dividedPath = this.path.split('/');
+        if(dividedPath[3] != undefined) {
+            const searchPart = '/' + dividedPath[3];
+
+            this.tabs.find(current => {
+                if (current.path == searchPart) {
+                    this.$refs['tab'+current.id][0].selected = true;
+                }
+            });
+        }
+        else {
+            this.$refs.tab0[0].selected = true;
+        }
+        if(dividedPath.length == 3 || dividedPath.length == 4) {
+            if (dividedPath[3] == '' | dividedPath[3] == undefined) {
+                route.push(this.path+'/ship-info');
+            }
+        }
     }
 }
 </script>

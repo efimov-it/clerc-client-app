@@ -7,7 +7,6 @@
 
 <script>
 import Vue from 'vue'
-import router from '../router'
 import axios from 'axios'
 import config from '../config';
 import ScrollBar from 'vue-custom-scrollbar';
@@ -58,14 +57,14 @@ export default {
             this.$emit('update',
             {
                 event : 'openDeal',
-                name : number,
+                name : number ? number : 'Номер не указан',
                 link: {path: '/deal/'+id, params: {dealId: id}}
             });
-            this.$router.push({path: '/deal/'+id+'', params: {dealId: id}});
+            this.$router.push({path: '/deal/'+id+'/ship-info', params: {dealId: id}});
         },
         refreshToken: function(){
                 axios.post(config.host+'/oauth/token',
-                "refresh_token="+sessionStorage.getItem(refresh_token)+
+                "refresh_token="+sessionStorage.getItem('refresh_token')+
                 "&client_id=1"+
                 "&client_secret=c75IGwuqkjrO1RWCE4Ntn4zqpQdpgnEO2wGT9iMT"+
                 "&grant_type=password").then((resp) => {
@@ -183,7 +182,7 @@ export default {
             if(confirm('Вы действительно хотите удалить контракт?')){
                 axios.delete(config.host+'/api/contracts/'+id,
                             {headers: { Authorization: this.AuthStr } })
-                        .then((resp)=>{
+                        .then(()=>{
                         }).catch((error) => {
                             if(error.response.data.error.messages[0] == 'true'){
                                 let newData = this.data.slice(0);
@@ -194,7 +193,7 @@ export default {
                                         this.data = newData;
                                         this.lastAddedId = null;
                                     }
-                                };
+                                }
                                 return;
                             }
                             alert('Ошибка!\r\rНе удалось удалить элемент.\r\rИнформация об ошибке:\r'+error);
@@ -216,7 +215,7 @@ export default {
             }
         },
 
-        import: function(id){
+        import: function(){
 
         },
 
@@ -225,8 +224,6 @@ export default {
             if(formatedData == undefined){
                 formatedData = [];
             }
-
-            let context = this;
             
             link = link == undefined ? config.host+'/api/contracts' : link;
 
