@@ -1,4 +1,4 @@
-# clerc-client-app
+# Client application for "Clerc" (clerc-client-app)
 
 ## Project setup
 ```
