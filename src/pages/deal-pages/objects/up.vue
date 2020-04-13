@@ -1,37 +1,36 @@
 <template>
     <div>
         <button v-if="this.role == 1" class="add-row" v-on:click="addGroupQuery">Добавить новую группу УП</button>
-        <scroll-bar :settings="{suppressScrollY : true}"
-                    class="group-wrapper" 
-                    v-for="(group, index) in data"
-                    :key="index">
-            
-            <div
-                class="group-header"
-                @click="loadUP(index,
-                               'group-checker'+index,
-                               '',
-                               1)"
-            >
+        <scroll-bar style="max-height: 50vh;">
+            <div v-for="(group, index) in data"
+                 :key="index"
+                class="group-wrapper" >
+                <div 
+                    class="group-header"
+                    @click="loadUP(index,
+                                'group-checker'+index,
+                                '',
+                                1)"
+                >
 
-                <label v-if="!group.isEdit" class="group-name" :for="'group-checker'+index">
-                    {{group.name}}
-                </label>
-                <input :ref="'group-name-input-'+index" v-if="group.isEdit" class="group-name group-name__edit"  type="text" v-model="group.name" />
-                <more-tools v-if="group.options.length > 0" @option-click="groupTools" :options="group.options" :id="group.id" customStyle="display: flex; flex-direction: row;" />
+                    <label v-if="!group.isEdit" class="group-name" :for="'group-checker'+index">
+                        {{group.name}}
+                    </label>
+                    <input :ref="'group-name-input-'+index" v-if="group.isEdit" class="group-name group-name__edit"  type="text" v-model="group.name" />
+                    <more-tools v-if="group.options.length > 0" @option-click="groupTools" :options="group.options" :id="group.id" customStyle="display: flex; flex-direction: row;" />
+                </div>
+                <input :id="'group-checker'+index" :ref="'group-checker'+index" type="checkbox" class="group-checker" />
+                <div class="group-content">
+                    <table-view :ref="'table'+group.id"
+                                @addRow="add(group.id)"
+                                @addRowInSubTable="addRaport"
+                                @update="update"
+                                :headers="group.subTable.headers"
+                                :data="group.subTable.rows"
+                                :inRowAdd="true"
+                                subTableColumns="grid-template-columns: repeat(3, minmax(300px, 1fr)) 500px repeat(2, minmax(300px, 1fr)) 40px;" /> 
+                </div>
             </div>
-            <input :id="'group-checker'+index" :ref="'group-checker'+index" type="checkbox" class="group-checker" />
-            <div class="group-content">
-                <table-view :ref="'table'+group.id"
-                            @addRow="add(group.id)"
-                            @addRowInSubTable="addRaport"
-                            @update="update"
-                            :headers="group.subTable.headers"
-                            :data="group.subTable.rows"
-                            :inRowAdd="true"
-                            subTableColumns="grid-template-columns: repeat(3, minmax(300px, 1fr)) 500px repeat(2, minmax(300px, 1fr)) 40px;" /> 
-            </div>
-            
         </scroll-bar>
     </div>
 </template>
@@ -291,12 +290,6 @@ export default {
                                 return 0;
                             }
                         });
-                        console.log('Количество '+formatedData.length);
-                        
-                        formatedData.forEach((item, i) => {
-                            console.log(i+')  ', item.id, item.data.number.value);
-                        });
-
                         currentGroup.subTable.rows = formatedData;
                     }
                 });
