@@ -126,6 +126,8 @@ button{
 }
 .ps__rail-y{
   height: calc(100% - 15px) !important;
+  width: 30px;
+  z-index: 1000;
   
   div{
     margin-right: 7.5px;
@@ -134,9 +136,6 @@ button{
 }
 .ps__rail-x{
   height: 30px;
-}
-.ps__rail-y{
-  width: 30px;
 }
 .ps__rail-x, .ps__rail-y{
     background-color: #EFEFF4;

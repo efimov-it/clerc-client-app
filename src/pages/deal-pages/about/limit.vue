@@ -58,6 +58,8 @@
                         <textarea class="table-view_cell-textarea"
                                   ref="editInputs"
                                   v-model="row.note"></textarea>
+
+                        <div @click="editLimit(1)" class="more-tools save-btn" title="Сохранить изменения"></div>
                     </div>
                 </div>
             </div>
@@ -385,60 +387,69 @@ export default {
             }
         },
 
-        editLimit(){
+        editLimit(state){
             setTimeout(()=>{
                 let inputs = this.$refs.editInputs;
 
-                inputs.forEach(input=>{
-                    input.onkeydown = (e)=>{
-                        if(e.keyCode == 13){
-                            if(inputs[inputs.length - 1].value.replace(/\r?\n/g, "").trim() != ''){
-                                let unicNote = true;
-                                
-                                this.data.forEach((limit, i)=>{
-                                    if(limit.note == inputs[inputs.length - 1].value & i != this.editLimitId){
-                                        unicNote = false;
-                                    }
-                                });
-                                
-                                if(unicNote){
-                                    let dataQuery = {
-                                        data: []
-                                    };
-                                    this.data[this.editLimitId].years.forEach((year, i)=>{
-                                        dataQuery.data.push({
-                                            id: year.id,
-                                            note: inputs[inputs.length - 1].value,
-                                            price: inputs[i].value == '' ? 'x' : inputs[i].value
-                                        });
-                                    });
-                                    
-                                    axios({
-                                        method: 'put',
-                                        data: dataQuery,
-                                        url: config.host+'/api/limitBudgetaryObligations/multiple',
-                                        headers: { Authorization: this.AuthStr }
-                                    }).then(()=>{
-                                        this.data[this.editLimitId].years.forEach((year, i)=>{
-                                            year.value = inputs[i].value;
-                                        });
-                                        this.data[this.editLimitId].note = inputs[inputs.length - 1].value;
-                                        this.data[this.editLimitId].isEdit = false;
-                                        this.isEdit = false;
-                                        this.editLimitId = false;
-                                    });
-                                }
-                                else{
-                                    alert('Лимит с таким примечанием уже существует.\rПерепроверьте введённые данные и повторите попытку.')
-                                }
-                            }
-                            else{
-                                alert('Необходимо заполнить поле "Примечание"');
-                                inputs[inputs.length - 1].value = null;
+                if (state) {
+                    saveLimit(this);
+                }
+                else {
+                    inputs.forEach(input=>{
+                        input.onkeydown = (e)=>{
+                            if(e.keyCode == 13){
+                                saveLimit(this)
                             }
                         }
+                    });
+                }
+
+                function saveLimit(context) {
+                    if(inputs[inputs.length - 1].value.replace(/\r?\n/g, "").trim() != ''){
+                        let unicNote = true;
+                        
+                        context.data.forEach((limit, i)=>{
+                            if(limit.note == inputs[inputs.length - 1].value & i != context.editLimitId){
+                                unicNote = false;
+                            }
+                        });
+                        
+                        if(unicNote){
+                            let dataQuery = {
+                                data: []
+                            };
+                            context.data[context.editLimitId].years.forEach((year, i)=>{
+                                dataQuery.data.push({
+                                    id: year.id,
+                                    note: inputs[inputs.length - 1].value,
+                                    price: inputs[i].value == '' ? 'x' : inputs[i].value
+                                });
+                            });
+                            
+                            axios({
+                                method: 'put',
+                                data: dataQuery,
+                                url: config.host+'/api/limitBudgetaryObligations/multiple',
+                                headers: { Authorization: context.AuthStr }
+                            }).then(()=>{
+                                context.data[context.editLimitId].years.forEach((year, i)=>{
+                                    year.value = inputs[i].value;
+                                });
+                                context.data[context.editLimitId].note = inputs[inputs.length - 1].value;
+                                context.data[context.editLimitId].isEdit = false;
+                                context.isEdit = false;
+                                context.editLimitId = false;
+                            });
+                        }
+                        else{
+                            alert('Лимит с таким примечанием уже существует.\rПерепроверьте введённые данные и повторите попытку.')
+                        }
                     }
-                });
+                    else{
+                        alert('Необходимо заполнить поле "Примечание"');
+                        inputs[inputs.length - 1].value = null;
+                    }
+                }
             },10);
             
         },
