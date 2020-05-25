@@ -28,6 +28,7 @@
                                 :headers="group.subTable.headers"
                                 :data="group.subTable.rows"
                                 :inRowAdd="true"
+                                @sort="sort"
                                 subTableColumns="grid-template-columns: repeat(3, minmax(300px, 1fr)) 500px repeat(2, minmax(300px, 1fr)) 40px;" /> 
                 </div>
             </div>
@@ -62,6 +63,19 @@ export default {
         }
     },
     methods: {
+        sort(sortArray){
+            this.data.find((group, i) => {
+                if (group.subTable.rows.length != 0) {
+                    this.data[i].subTable.rows = [];
+
+                    this.$nextTick().then(()=>{
+                        this.data[i].subTable.rows = sortArray;
+                    });
+                }
+            });
+        },
+
+
         //Группа УП
         addGroupQuery : function(){
             if(this.groupEditId == null){
@@ -159,7 +173,7 @@ export default {
                             ],
                             data:{
                                 number: {
-                                    type: 'text',
+                                    type: 'number',
                                     value: ccElem.number
                                 },
                                 name: {

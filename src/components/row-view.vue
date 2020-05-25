@@ -87,6 +87,7 @@
                             :headers="this.rowData.subTable.headers"
                             :data="this.rowData.subTable.rows"
                             :inRowAdd="inRowAdd"
+                            @sort="sort"
                             :columns="subTableColumns"></table-view>
             </div>
         </div>
@@ -125,6 +126,14 @@ export default {
         }
     },
     methods : {
+        sort(sortArray){
+            this.rowData.subTable.rows = [];
+            this.$nextTick().then(()=>{
+                this.rowData.subTable.rows = sortArray;
+            });
+        },
+
+
         checkboxChange : function(index){
             this.$emit('checkboxChange', index);
         },

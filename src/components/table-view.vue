@@ -1,5 +1,6 @@
 <template>
     <div class="table-view-wrapper">
+        
         <scroll-bar :settings="{suppressScrollY : true}" class="table-view">
             <header v-if="this.data != undefined" class="table-view_headers" :style="columns?columns:'grid-template-columns: repeat('+(this.headers.length)+', minmax(300px, 1fr)) 40px;'">
                 <div ref="header"
@@ -164,8 +165,6 @@ export default {
             //Выбор функции сортировки исходя из типа данных столбца
             if(this.data[0].data[currentColumn].type == 'number'){
                 sortFunc = (a, b) => {
-                    console.log(parseFloat(a.data[currentColumn].value.replace(/\s/g, '')), parseFloat(b.data[currentColumn].value.replace(/\s/g, '')));
-                    
                     return this.sortDirection * parseFloat(a.data[currentColumn].value.replace(/\s/g, '')) - parseFloat(b.data[currentColumn].value.replace(/\s/g, ''));
                 }
             }
@@ -192,24 +191,36 @@ export default {
                     }
                 }
                 else{
-                    if(this.sortDirection == -1){
-                        sortFunc = function(a, b){
-                            if(a.data[currentColumn].value > b.data[currentColumn].value){
-                                return 1;
+                    
+                    if ( this.data[0].data[currentColumn].value.replace(/\.|\d|\s/g, '') == '' &&
+                         this.data[0].data[currentColumn].value.length > 2 ) {
+                        
+                        sortFunc = (a, b) => {
+                            a = a.data[currentColumn].value.split('.');
+                            b = b.data[currentColumn].value.split('.');
+                            
+                            const length =a.length > b.length ? a.length : b.length;
+
+                            for(let i = 0; i < length; i++) {
+                                if (parseInt(a[i]) != parseInt(b[i])) {
+                                    if(parseInt(a[i]) > parseInt(b[i])){
+                                        return this.sortDirection;
+                                    }
+                                    if(parseInt(a[i]) < parseInt(b[i])){
+                                        return -1 * this.sortDirection;
+                                    }
+                                    return 0;
+                                }
                             }
-                            if(a.data[currentColumn].value < b.data[currentColumn].value){
-                                return -1;
-                            }
-                            return 0;
                         }
                     }
-                    else{
-                        sortFunc = function(a, b){
-                            if(a.data[currentColumn].value < b.data[currentColumn].value){
-                                return 1;
-                            }
+                    else {
+                        sortFunc = (a, b) => {
                             if(a.data[currentColumn].value > b.data[currentColumn].value){
-                                return -1;
+                                return this.sortDirection;
+                            }
+                            if(a.data[currentColumn].value < b.data[currentColumn].value){
+                                return -1 * this.sortDirection;
                             }
                             return 0;
                         }
